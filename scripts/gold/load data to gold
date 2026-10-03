@@ -1,0 +1,81 @@
+-- =============================================================================
+-- Create Dimension: gold.dim_products
+-- =============================================================================
+IF OBJECT_ID('gold.dim_products', 'V') IS NOT NULL
+    DROP VIEW gold.dim_products;
+GO
+
+CREATE VIEW gold.dim_products AS
+SELECT
+    p.product_id       AS product_id,
+    p.product_name     AS product_name,
+    p.department_id    AS department_id,
+    d.department       AS department_name,
+    p.aisle_id         AS aisle_id,
+    a.aisle            AS aisle_name
+FROM silver.products p
+LEFT JOIN silver.aisles a
+    ON p.aisle_id = a.aisle_id
+LEFT JOIN silver.departments d
+    ON p.department_id = d.department_id;
+GO
+
+
+-- =============================================================================
+-- Create Dimension: gold.dim_users
+-- =============================================================================
+IF OBJECT_ID('gold.dim_users', 'V') IS NOT NULL
+    DROP VIEW gold.dim_users;
+GO
+
+CREATE VIEW gold.dim_users AS
+SELECT DISTINCT
+    user_id
+FROM silver.orders;
+GO
+
+
+-- =============================================================================
+-- Create Fact Table: gold.fact_orders
+-- =============================================================================
+IF OBJECT_ID('gold.fact_orders', 'V') IS NOT NULL
+    DROP VIEW gold.fact_orders;
+GO
+
+CREATE VIEW gold.fact_orders AS
+SELECT
+    order_id,
+    user_id,
+    eval_set                 AS order_dataset,
+    order_number,
+    order_dow                AS order_day_of_week,
+    order_hour_of_day        AS order_hour,
+    days_since_prior_order   AS days_since_previous_order
+FROM silver.orders;
+GO
+
+
+-- =============================================================================
+-- Create Fact Table: gold.fact_order_products
+-- =============================================================================
+IF OBJECT_ID('gold.fact_order_products', 'V') IS NOT NULL
+    DROP VIEW gold.fact_order_products;
+GO
+
+CREATE VIEW gold.fact_order_products AS
+SELECT
+    order_id,
+    product_id,
+    add_to_cart_order    AS cart_position,
+    reordered            AS is_reordered
+FROM silver.order_products_prior
+
+UNION ALL
+
+SELECT
+    order_id,
+    product_id,
+    add_to_cart_order    AS cart_position,
+    reordered            AS is_reordered
+FROM silver.order_products_train;
+GO
