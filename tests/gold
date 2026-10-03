@@ -1,0 +1,52 @@
+select 
+product_id,
+count(*)
+from gold.dim_products
+group by product_id
+having COUNT(*) > 1
+
+SELECT
+user_id,
+COUNT(*) AS cnt
+FROM gold.dim_users
+GROUP BY user_id
+HAVING COUNT(*) > 1;
+
+SELECT
+    order_id,
+    COUNT(*) AS cnt
+FROM gold.fact_orders
+GROUP BY order_id
+HAVING COUNT(*) > 1;
+
+SELECT
+    order_id,
+    product_id,
+    COUNT(*) AS cnt
+FROM gold.fact_order_products
+GROUP BY
+    order_id,
+    product_id
+HAVING COUNT(*) > 1;
+
+SELECT DISTINCT
+    f.product_id
+FROM gold.fact_order_products f
+LEFT JOIN gold.dim_products p
+    ON f.product_id = p.product_id
+WHERE p.product_id IS NULL;
+
+SELECT DISTINCT
+    f.order_id
+FROM gold.fact_order_products f
+LEFT JOIN gold.fact_orders o
+    ON f.order_id = o.order_id
+WHERE o.order_id IS NULL;
+
+SELECT DISTINCT
+    f.user_id
+FROM gold.fact_orders f
+LEFT JOIN gold.dim_users u
+    ON f.user_id = u.user_id
+WHERE u.user_id IS NULL;
+
