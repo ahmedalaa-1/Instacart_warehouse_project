@@ -1,69 +1,106 @@
--- creating the tables for silver layer
+USE instacart_dw;
+GO
 
-create table silver.crm_cust_info
+-- =====================================================
+-- Create silver Tables
+-- =====================================================
+
+-- silver Aisles
+IF OBJECT_ID('silver.aisles', 'U') IS NOT NULL
+BEGIN
+    DROP TABLE silver.aisles;
+END;
+GO
+
+CREATE TABLE silver.aisles
 (
-    cst_id int,
-    cst_key varchar(50),
-    cst_firstname varchar(100),
-    cst_lastname varchar(100),
-    cst_marital_status varchar(1),
-    cst_gndr varchar(1),
-    cst_create_date date,
-    dwh_create_date DATETIME2 DEFAULT GETDATE()
+    aisle_id INT,
+    aisle NVARCHAR(250)
 );
-go
-IF OBJECT_ID ('silver.crm_prd_info','U') IS NOT NULL
-DROP TABLE silver.crm_prd_info;
-create table silver.crm_prd_info
-(
-    prd_id	int,
-    cat_id varchar(50),
-    prd_key	varchar(100),
-    prd_nm	varchar(100),
-    prd_cost decimal(10,2),
-    prd_line	varchar(50),
-    prd_start_dt date,
-    prd_end_dt	date,
-    dwh_create_date DATETIME2 DEFAULT GETDATE()
-); 
-go
-IF OBJECT_ID ('silver.crm_sales_details','U') IS NOT NULL
-DROP TABLE silver.crm_sales_details;
-create table silver.crm_sales_details
-(
-    sls_ord_num	varchar(100),
-    sls_prd_key	varchar(100),
-    sls_cust_id	int,
-    sls_order_dt date,
-    sls_ship_dt	date,
-    sls_due_dt	date,
-    sls_sales	decimal(10,2),
-    sls_quantity	int,
-    sls_price	decimal(10,2),
-    dwh_create_date DATETIME2 DEFAULT GETDATE()
-); 
-go
-create table silver.erp_cust_az12
-(
-    CID varchar(50),	
-    BDATE date,	
-    GEN varchar(20),
-    dwh_create_date DATETIME2 DEFAULT GETDATE()
-); 
-go
-create table silver.erp_loc_a101
-(
-    CID varchar(100),	
-   CNTRY varchar(100),
-    dwh_create_date DATETIME2 DEFAULT GETDATE()
-);
-go
-create table silver.erp_px_cat_g1V2
-(
-    ID	varchar(50),
-    CAT	varchar(100),
-    SUBCAT	varchar(100),
-    MAINTENANCE	varchar(20)
-);
+GO
 
 
+-- silver Departments
+IF OBJECT_ID('silver.departments', 'U') IS NOT NULL
+BEGIN
+    DROP TABLE silver.departments;
+END;
+GO
+
+CREATE TABLE silver.departments
+(
+    department_id INT,
+    department NVARCHAR(250)
+);
+GO
+
+
+-- silver Order Products Prior
+IF OBJECT_ID('silver.order_products_prior', 'U') IS NOT NULL
+BEGIN
+    DROP TABLE silver.order_products_prior;
+END;
+GO
+
+CREATE TABLE silver.order_products_prior
+(
+    order_id INT,
+    product_id INT,
+    add_to_cart_order INT,
+    reordered INT
+);
+GO
+
+
+-- silver Order Products Train
+IF OBJECT_ID('silver.order_products_train', 'U') IS NOT NULL
+BEGIN
+    DROP TABLE silver.order_products_train;
+END;
+GO
+
+CREATE TABLE silver.order_products_train
+(
+    order_id INT,
+    product_id INT,
+    add_to_cart_order INT,
+    reordered INT
+);
+GO
+
+
+-- silver Orders
+IF OBJECT_ID('silver.orders', 'U') IS NOT NULL
+BEGIN
+    DROP TABLE silver.orders;
+END;
+GO
+
+CREATE TABLE silver.orders
+(
+    order_id INT,
+    user_id INT,
+    eval_set VARCHAR(20),
+    order_number INT,
+    order_dow INT,
+    order_hour_of_day INT,
+    days_since_prior_order DECIMAL(10,1) NULL
+);
+GO
+
+
+-- silver Products
+IF OBJECT_ID('silver.products', 'U') IS NOT NULL
+BEGIN
+    DROP TABLE silver.products;
+END;
+GO
+
+CREATE TABLE silver.products
+(
+    product_id INT,
+    product_name NVARCHAR(500),
+    aisle_id INT,
+    department_id INT
+);
+GO
