@@ -16,7 +16,8 @@ The project follows a layered Data Warehouse architecture where each layer trans
 
 <!-- Add your Architecture Diagram here -->
 
-![Instacart Data Warehouse Architecture](docs/architecture-diagram.png)
+![Instacart Data Warehouse Architecture](Architecture Diagram.png
+)
 
 ---
 
