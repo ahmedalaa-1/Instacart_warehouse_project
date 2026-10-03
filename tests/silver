@@ -1,0 +1,234 @@
+-- ============================================================
+-- CHECK AISLES TABLE QUALITY
+-- ============================================================
+
+SELECT COUNT(*), aisle_id
+FROM silver.aisles
+GROUP BY aisle_id
+HAVING COUNT(*) > 1;
+
+SELECT aisle_id
+FROM silver.aisles
+WHERE aisle_id <= 0 OR aisle_id IS NULL;
+
+SELECT aisle
+FROM silver.aisles
+WHERE aisle <> TRIM(aisle);
+
+SELECT aisle
+FROM silver.aisles
+WHERE aisle = '' OR aisle = ' ';
+
+
+-- ============================================================
+-- CHECK DEPARTMENTS TABLE QUALITY
+-- ============================================================
+
+SELECT COUNT(*), department_id
+FROM silver.departments
+GROUP BY department_id
+HAVING COUNT(*) > 1;
+
+SELECT department_id
+FROM silver.departments
+WHERE department_id <= 0 OR department_id IS NULL;
+
+SELECT department
+FROM silver.departments
+WHERE department <> TRIM(department);
+
+SELECT department
+FROM silver.departments
+WHERE department = '' OR department = ' ';
+
+
+-- ============================================================
+-- CHECK ORDER_PRODUCTS_PRIOR TABLE QUALITY
+-- ============================================================
+
+SELECT COUNT(*), order_id, product_id
+FROM silver.order_products_prior
+GROUP BY order_id, product_id
+HAVING COUNT(*) > 1;
+
+SELECT order_id
+FROM silver.order_products_prior
+WHERE order_id <= 0 OR order_id IS NULL;
+
+SELECT product_id
+FROM silver.order_products_prior
+WHERE product_id <= 0 OR product_id IS NULL;
+
+SELECT add_to_cart_order
+FROM silver.order_products_prior
+WHERE add_to_cart_order <= 0;
+
+SELECT reordered
+FROM silver.order_products_prior
+WHERE reordered NOT IN (1, 0);
+
+
+-- ============================================================
+-- CHECK ORDER_PRODUCTS_TRAIN TABLE QUALITY
+-- ============================================================
+
+SELECT COUNT(*), order_id, product_id
+FROM silver.order_products_train
+GROUP BY order_id, product_id
+HAVING COUNT(*) > 1;
+
+SELECT order_id
+FROM silver.order_products_train
+WHERE order_id <= 0 OR order_id IS NULL;
+
+SELECT product_id
+FROM silver.order_products_train
+WHERE product_id <= 0 OR product_id IS NULL;
+
+SELECT add_to_cart_order
+FROM silver.order_products_train
+WHERE add_to_cart_order <= 0;
+
+SELECT reordered
+FROM silver.order_products_train
+WHERE reordered NOT IN (1, 0);
+
+
+-- ============================================================
+-- CHECK ORDERS TABLE QUALITY
+-- ============================================================
+
+SELECT COUNT(*), order_id, user_id
+FROM silver.orders
+GROUP BY order_id, user_id
+HAVING COUNT(*) > 1;
+
+SELECT COUNT(*), order_id, user_id, order_number
+FROM silver.orders
+GROUP BY order_id, user_id, order_number
+HAVING COUNT(*) > 1;
+
+SELECT COUNT(*), order_id
+FROM silver.orders
+GROUP BY order_id
+HAVING COUNT(*) > 1;
+
+SELECT order_id
+FROM silver.orders
+WHERE order_id <= 0 OR order_id IS NULL;
+
+SELECT user_id
+FROM silver.orders
+WHERE user_id <= 0 OR user_id IS NULL;
+
+SELECT eval_set
+FROM silver.orders
+WHERE eval_set NOT IN ('prior', 'train', 'test');
+
+SELECT order_number
+FROM silver.orders
+WHERE order_number <= 0;
+
+SELECT order_dow
+FROM silver.orders
+WHERE order_dow NOT BETWEEN 0 AND 6;
+
+SELECT order_hour_of_day
+FROM silver.orders
+WHERE order_hour_of_day NOT BETWEEN 0 AND 23;
+
+SELECT days_since_prior_order
+FROM silver.orders
+WHERE days_since_prior_order < 0;
+
+
+-- ============================================================
+-- CHECK PRODUCTS TABLE QUALITY
+-- ============================================================
+
+SELECT COUNT(*), product_id, product_name
+FROM silver.products
+GROUP BY product_id, product_name
+HAVING COUNT(*) > 1;
+
+SELECT COUNT(*), product_id, product_name, aisle_id
+FROM silver.products
+GROUP BY product_id, product_name, aisle_id
+HAVING COUNT(*) > 1;
+
+SELECT COUNT(*), product_id, product_name, aisle_id, department_id
+FROM silver.products
+GROUP BY product_id, product_name, aisle_id, department_id
+HAVING COUNT(*) > 1;
+
+SELECT COUNT(*), product_id
+FROM silver.products
+GROUP BY product_id
+HAVING COUNT(*) > 1;
+
+SELECT product_id
+FROM silver.products
+WHERE product_id <= 0 OR product_id IS NULL;
+
+SELECT product_name
+FROM silver.products
+WHERE product_name <> TRIM(product_name);
+
+SELECT product_name
+FROM silver.products
+WHERE product_name = '' OR product_name = ' ';
+
+SELECT aisle_id
+FROM silver.products
+WHERE aisle_id <= 0 OR aisle_id IS NULL;
+
+SELECT department_id
+FROM silver.products
+WHERE department_id <= 0 OR department_id IS NULL;
+
+
+-- ============================================================
+-- CHECK RELATIONSHIPS
+-- ============================================================
+
+SELECT p.product_id, p.aisle_id
+FROM silver.products p
+LEFT JOIN silver.aisles a
+    ON p.aisle_id = a.aisle_id
+WHERE p.aisle_id IS NOT NULL
+  AND a.aisle_id IS NULL;
+
+SELECT p.product_id, p.department_id
+FROM silver.products p
+LEFT JOIN silver.departments d
+    ON p.department_id = d.department_id
+WHERE p.department_id IS NOT NULL
+  AND d.department_id IS NULL;
+
+SELECT op.order_id
+FROM silver.order_products_prior op
+LEFT JOIN silver.orders o
+    ON op.order_id = o.order_id
+WHERE op.order_id IS NOT NULL
+  AND o.order_id IS NULL;
+
+SELECT op.order_id, op.product_id
+FROM silver.order_products_prior op
+LEFT JOIN silver.products p
+    ON op.product_id = p.product_id
+WHERE op.product_id IS NOT NULL
+  AND p.product_id IS NULL;
+
+SELECT op.order_id
+FROM silver.order_products_train op
+LEFT JOIN silver.orders o
+    ON op.order_id = o.order_id
+WHERE op.order_id IS NOT NULL
+  AND o.order_id IS NULL;
+
+SELECT op.order_id, op.product_id
+FROM silver.order_products_train op
+LEFT JOIN silver.products p
+    ON op.product_id = p.product_id
+WHERE op.product_id IS NOT NULL
+  AND p.product_id IS NULL;
