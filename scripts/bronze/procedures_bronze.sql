@@ -1,155 +1,197 @@
-/*
-=======================================================
-Stored Procedure: Load Bronze Layer (Source -> Bronze)
-====================================================
-Script Purpose:
-This stored procedure loads data into the 'bronze' schema from external CSV files.
-It performs the following actions:
-- Truncates the bronze tables before loading data.
-- Uses the BULK INSERT' command to load data from csv Files to bronze tables.
-=========================================
-Parameters:
-None.
+CREATE OR ALTER PROCEDURE bronze.load_bronze
+AS
+BEGIN
 
-This stored procedure does not accept any parameters or return any values.
+    DECLARE
+        @start_time DATETIME,
+        @end_time DATETIME,
+        @batch_start_time DATETIME,
+        @batch_end_time DATETIME,
+        @load_duration INT,
+        @error_message NVARCHAR(4000),
+        @error_number INT,
+        @error_state INT;
 
-Usage Example:
-EXEC bronze.load_bronze;
-=============================================================
-*/
-create or alter procedure bronze.load_bronze as
-begin
-	begin try
+    BEGIN TRY
 
-		declare @starttime datetime ,@endtime datetime,@batch_starttime datetime,@batch_endtime datetime;
+        SET @batch_start_time = GETDATE();
 
-		set @batch_starttime = getdate();
+        RAISERROR('================================================', 0, 1) WITH NOWAIT;
+        RAISERROR('Loading Bronze Data', 0, 1) WITH NOWAIT;
+        RAISERROR('================================================', 0, 1) WITH NOWAIT;
 
-		print '=============================================';
-		print 'Loading bronze layer...';
-		print '=============================================';
-	
-		print '=============================================';
-		print 'Loading CRM tables...';
-		print '=============================================';
 
-		print '---------------------------------------------';
-		print 'truncating & inserting data into bronze.crm_cust_info...';
-		print '---------------------------------------------';
+        /* =========================================================
+           Load: bronze.aisles
+           ========================================================= */
 
-		set @starttime = getdate();
-		truncate table bronze.crm_cust_info;
-		bulk insert bronze.crm_cust_info 
-		from 'B:\baraa sql\sql-data-warehouse-project\datasets\source_crm\cust_info.csv'
-		with 
-		( firstrow = 2,
-		fieldterminator = ',',
-		tablock
-		);
-		set @endtime = getdate();
-		PRINT '>> Load Duration: '+ CAST(DATEDIFF(second, @starttime, @endtime) AS NVARCHAR) + ' seconds';
-	
-		print '---------------------------------------------';
-		print 'truncating & inserting data into bronze.crm_prd_info...';
-		print '---------------------------------------------';
+        SET @start_time = GETDATE();
 
-		set @starttime = getdate();
-		truncate table bronze.crm_prd_info;
-		bulk insert bronze.crm_prd_info 
-		from 'B:\baraa sql\sql-data-warehouse-project\datasets\source_crm\prd_info.csv'
-		with 
-		( firstrow = 2,
-		fieldterminator = ',',
-		tablock
-		);
-		set @endtime = getdate();
-	
-		PRINT '>> Load Duration: '+ CAST(DATEDIFF(second, @starttime, @endtime) AS NVARCHAR) + ' seconds';
-	
-		print '---------------------------------------------';
-		print 'truncating & inserting data into bronze.crm_sales_details...';
-		print '---------------------------------------------';
-	
-		set @starttime = getdate();
-		truncate table bronze.crm_sales_details;
-		bulk insert bronze.crm_sales_details 
-		from 'B:\baraa sql\sql-data-warehouse-project\datasets\source_crm\sales_details.csv'
-		with 
-		( firstrow = 2,
-		fieldterminator = ',',
-		tablock
-		);
-		set @endtime = getdate();
+        RAISERROR('>> Truncating Table: bronze.aisles', 0, 1) WITH NOWAIT;
 
-		PRINT '>> Load Duration: '+ CAST(DATEDIFF(second, @starttime, @endtime) AS NVARCHAR) + ' seconds';
+        TRUNCATE TABLE bronze.aisles;
 
-		print '=============================================';
-		print 'Loading ERP tables...';
-		print '=============================================';
+        RAISERROR('>> Inserting Data Into: bronze.aisles', 0, 1) WITH NOWAIT;
 
-		print '---------------------------------------------';
-		print 'truncating & inserting data into bronze.erp_cust_az12...';
-		print '---------------------------------------------';
+        INSERT INTO bronze.aisles
+        SELECT *
+        FROM dq.raw_aisles_messy;
 
-		set @starttime = getdate();
-		truncate table bronze.erp_cust_az12;
-		bulk insert bronze.erp_cust_az12 
-		from 'B:\baraa sql\sql-data-warehouse-project\datasets\source_erp\cust_az12.csv'
-		with 
-		( firstrow = 2,
-		fieldterminator = ',',
-		tablock
-		);
-		set @endtime = getdate();
-	
-		PRINT '>> Load Duration: '+ CAST(DATEDIFF(second, @starttime, @endtime) AS NVARCHAR) + ' seconds';
-	
-		print '---------------------------------------------';
-		print 'truncating & inserting data into bronze.erp_loc_a101...';
-		print '---------------------------------------------';
+        SET @end_time = GETDATE();
 
-		set @starttime = getdate();
-		truncate table bronze.erp_loc_a101;
-		bulk insert bronze.erp_loc_a101 
-		from 'B:\baraa sql\sql-data-warehouse-project\datasets\source_erp\loc_a101.csv'
-		with 
-		( firstrow = 2,
-		fieldterminator = ',',
-		tablock
-		);
-		set @endtime = getdate();
+        SET @load_duration = DATEDIFF(SECOND, @start_time, @end_time);
 
-		PRINT '>> Load Duration: '+ CAST(DATEDIFF(second, @starttime, @endtime) AS NVARCHAR) + ' seconds';
+        RAISERROR('>> Load Duration: %d seconds', 0, 1, @load_duration) WITH NOWAIT;
 
-		print '---------------------------------------------';
-		print 'truncating & inserting data into bronze.erp_PX_CAT_G1V2...';
-		print '---------------------------------------------';
 
-		set @starttime = getdate();
-		truncate table bronze.erp_px_cat_g1V2;
-		bulk insert bronze.erp_px_cat_g1V2 
-		from 'B:\baraa sql\sql-data-warehouse-project\datasets\source_erp\PX_CAT_G1V2.csv'
-		with 
-		( firstrow = 2,
-		fieldterminator = ',',
-		tablock
-		);
-		set @endtime = getdate();
-	
-		PRINT '>> Load Duration: '+ CAST(DATEDIFF(second, @starttime, @endtime) AS NVARCHAR) + ' seconds';
+        /* =========================================================
+           Load: bronze.departments
+           ========================================================= */
 
-		set @batch_endtime = getdate();
+        SET @start_time = GETDATE();
 
-		PRINT '=============================================';
-		PRINT 'Bronze layer load completed successfully!';
-		PRINT '>> Batch Duration: '+ CAST(DATEDIFF(second, @batch_starttime, @batch_endtime) AS NVARCHAR) + ' seconds';
-		PRINT '=============================================';
-	end try 
-	begin catch
-		PRINT '=============================================';
-		PRINT 'Error occurred during bronze layer load!';
-		PRINT 'Error Message: ' + ERROR_MESSAGE();
-		PRINT 'Error Number: ' + CAST(ERROR_NUMBER() AS NVARCHAR);
-		PRINT '=============================================';
-	end catch
-end
+        RAISERROR('>> Truncating Table: bronze.departments', 0, 1) WITH NOWAIT;
+
+        TRUNCATE TABLE bronze.departments;
+
+        RAISERROR('>> Inserting Data Into: bronze.departments', 0, 1) WITH NOWAIT;
+
+        INSERT INTO bronze.departments
+        SELECT *
+        FROM dq.raw_departments_messy;
+
+        SET @end_time = GETDATE();
+
+        SET @load_duration = DATEDIFF(SECOND, @start_time, @end_time);
+
+        RAISERROR('>> Load Duration: %d seconds', 0, 1, @load_duration) WITH NOWAIT;
+
+
+        /* =========================================================
+           Load: bronze.order_products_prior
+           ========================================================= */
+
+        SET @start_time = GETDATE();
+
+        RAISERROR('>> Truncating Table: bronze.order_products_prior', 0, 1) WITH NOWAIT;
+
+        TRUNCATE TABLE bronze.order_products_prior;
+
+        RAISERROR('>> Inserting Data Into: bronze.order_products_prior', 0, 1) WITH NOWAIT;
+
+        INSERT INTO bronze.order_products_prior
+        SELECT *
+        FROM dq.raw_order_products_prior_messy;
+
+        SET @end_time = GETDATE();
+
+        SET @load_duration = DATEDIFF(SECOND, @start_time, @end_time);
+
+        RAISERROR('>> Load Duration: %d seconds', 0, 1, @load_duration) WITH NOWAIT;
+
+
+        /* =========================================================
+           Load: bronze.order_products_train
+           ========================================================= */
+
+        SET @start_time = GETDATE();
+
+        RAISERROR('>> Truncating Table: bronze.order_products_train', 0, 1) WITH NOWAIT;
+
+        TRUNCATE TABLE bronze.order_products_train;
+
+        RAISERROR('>> Inserting Data Into: bronze.order_products_train', 0, 1) WITH NOWAIT;
+
+        INSERT INTO bronze.order_products_train
+        SELECT *
+        FROM dq.raw_order_products_train_messy;
+
+        SET @end_time = GETDATE();
+
+        SET @load_duration = DATEDIFF(SECOND, @start_time, @end_time);
+
+        RAISERROR('>> Load Duration: %d seconds', 0, 1, @load_duration) WITH NOWAIT;
+
+
+        /* =========================================================
+           Load: bronze.orders
+           ========================================================= */
+
+        SET @start_time = GETDATE();
+
+        RAISERROR('>> Truncating Table: bronze.orders', 0, 1) WITH NOWAIT;
+
+        TRUNCATE TABLE bronze.orders;
+
+        RAISERROR('>> Inserting Data Into: bronze.orders', 0, 1) WITH NOWAIT;
+
+        INSERT INTO bronze.orders
+        SELECT *
+        FROM dq.raw_orders_messy;
+
+        SET @end_time = GETDATE();
+
+        SET @load_duration = DATEDIFF(SECOND, @start_time, @end_time);
+
+        RAISERROR('>> Load Duration: %d seconds', 0, 1, @load_duration) WITH NOWAIT;
+
+
+        /* =========================================================
+           Load: bronze.products
+           ========================================================= */
+
+        SET @start_time = GETDATE();
+
+        RAISERROR('>> Truncating Table: bronze.products', 0, 1) WITH NOWAIT;
+
+        TRUNCATE TABLE bronze.products;
+
+        RAISERROR('>> Inserting Data Into: bronze.products', 0, 1) WITH NOWAIT;
+
+        INSERT INTO bronze.products
+        SELECT *
+        FROM dq.raw_products_messy;
+
+        SET @end_time = GETDATE();
+
+        SET @load_duration = DATEDIFF(SECOND, @start_time, @end_time);
+
+        RAISERROR('>> Load Duration: %d seconds', 0, 1, @load_duration) WITH NOWAIT;
+
+
+        /* =========================================================
+           Batch Completion
+           ========================================================= */
+
+        SET @batch_end_time = GETDATE();
+
+        SET @load_duration =
+            DATEDIFF(SECOND, @batch_start_time, @batch_end_time);
+
+        RAISERROR('==========================================', 0, 1) WITH NOWAIT;
+        RAISERROR('Loading Bronze Data is Completed', 0, 1) WITH NOWAIT;
+        RAISERROR('   - Total Load Duration: %d seconds', 0, 1, @load_duration) WITH NOWAIT;
+        RAISERROR('==========================================', 0, 1) WITH NOWAIT;
+
+
+    END TRY
+
+    BEGIN CATCH
+
+        SELECT
+            @error_message = ERROR_MESSAGE(),
+            @error_number = ERROR_NUMBER(),
+            @error_state = ERROR_STATE();
+
+        RAISERROR('==========================================', 0, 1) WITH NOWAIT;
+        RAISERROR('ERROR OCCURRED DURING LOADING BRONZE DATA', 0, 1) WITH NOWAIT;
+
+        RAISERROR('Error Message: %s', 0, 1, @error_message) WITH NOWAIT;
+        RAISERROR('Error Number: %d', 0, 1, @error_number) WITH NOWAIT;
+        RAISERROR('Error State: %d', 0, 1, @error_state) WITH NOWAIT;
+
+        RAISERROR('==========================================', 0, 1) WITH NOWAIT;
+
+    END CATCH
+
+END;
