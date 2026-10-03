@@ -1,59 +1,106 @@
--- creating the tables 
+USE instacart_dw;
+GO
 
-create table bronze.crm_cust_info
+-- =====================================================
+-- Create bronze Tables
+-- =====================================================
+
+-- bronze Aisles
+IF OBJECT_ID('bronze.aisles', 'U') IS NOT NULL
+BEGIN
+    DROP TABLE bronze.aisles;
+END;
+GO
+
+CREATE TABLE bronze.aisles
 (
-    cst_id int,
-    cst_key varchar(50),
-    cst_firstname varchar(100),
-    cst_lastname varchar(100),
-    cst_marital_status varchar(1),
-    cst_gndr varchar(1),
-    cst_create_date date
+    aisle_id INT,
+    aisle NVARCHAR(250)
 );
-go
-create table bronze.crm_prd_info
-(
-    prd_id	int,
-    prd_key	varchar(100),
-    prd_nm	varchar(100),
-    prd_cost decimal(10,2),
-    prd_line	varchar(10),
-    prd_start_dt	date,
-    prd_end_dt	date
-); 
-go
-create table bronze.crm_sales_details
-(
-    sls_ord_num	varchar(100),
-    sls_prd_key	varchar(100),
-    sls_cust_id	int,
-    sls_order_dt int,
-    sls_ship_dt	int,
-    sls_due_dt	int,
-    sls_sales	decimal(10,2),
-    sls_quantity	int,
-    sls_price	decimal(10,2)
-); 
-go
-create table bronze.erp_cust_az12
-(
-    CID varchar(50),	
-    BDATE date,	
-    GEN varchar(20),
-); 
-go
-create table bronze.erp_loc_a101
-(
-    CID varchar(100),	
-   CNTRY varchar(100)
-);
-go
-create table bronze.erp_px_cat_g1V2
-(
-    ID	varchar(50),
-    CAT	varchar(100),
-    SUBCAT	varchar(100),
-    MAINTENANCE	varchar(20)
-);
+GO
 
 
+-- bronze Departments
+IF OBJECT_ID('bronze.departments', 'U') IS NOT NULL
+BEGIN
+    DROP TABLE bronze.departments;
+END;
+GO
+
+CREATE TABLE bronze.departments
+(
+    department_id INT,
+    department NVARCHAR(250)
+);
+GO
+
+
+-- bronze Order Products Prior
+IF OBJECT_ID('bronze.order_products_prior', 'U') IS NOT NULL
+BEGIN
+    DROP TABLE bronze.order_products_prior;
+END;
+GO
+
+CREATE TABLE bronze.order_products_prior
+(
+    order_id INT,
+    product_id INT,
+    add_to_cart_order INT,
+    reordered INT
+);
+GO
+
+
+-- bronze Order Products Train
+IF OBJECT_ID('bronze.order_products_train', 'U') IS NOT NULL
+BEGIN
+    DROP TABLE bronze.order_products_train;
+END;
+GO
+
+CREATE TABLE bronze.order_products_train
+(
+    order_id INT,
+    product_id INT,
+    add_to_cart_order INT,
+    reordered INT
+);
+GO
+
+
+-- bronze Orders
+IF OBJECT_ID('bronze.orders', 'U') IS NOT NULL
+BEGIN
+    DROP TABLE bronze.orders;
+END;
+GO
+
+CREATE TABLE bronze.orders
+(
+    order_id INT,
+    user_id INT,
+    eval_set VARCHAR(20),
+    order_number INT,
+    order_dow INT,
+    order_hour_of_day INT,
+    days_since_prior_order DECIMAL(10,1) NULL
+);
+GO
+
+
+-- bronze Products
+IF OBJECT_ID('bronze.products', 'U') IS NOT NULL
+BEGIN
+    DROP TABLE bronze.products;
+END;
+GO
+
+CREATE TABLE bronze.products
+(
+    product_id INT,
+    product_name NVARCHAR(500),
+    aisle_id INT,
+    department_id INT
+);
+GO
